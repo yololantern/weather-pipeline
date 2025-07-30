@@ -5,19 +5,22 @@ A real-time weather data collection and processing pipeline built in Go, designe
 ## Features
 
 - Collect real-time weather data from OpenWeatherMap API
+- Fallback to National Weather Service API when no OpenWeatherMap API key is provided
 - Process multiple locations in batch
 - Schedule automatic data collection at configurable intervals
 - Output in multiple formats (text, JSON, CSV, Kafka)
 - AI-powered weather summary generation using OpenAI
 - Flexible configuration through command-line flags
+- Optional web-based GUI with Docker support
 
 ## Installation
 
 ### Prerequisites
 
 - Go 1.21 or later
-- OpenWeatherMap API key
+- OpenWeatherMap API key (optional, will use National Weather Service API as fallback)
 - OpenAI API key (optional, for AI summaries)
+- Docker and Docker Compose (optional, for running the GUI)
 
 ### Building from Source
 
@@ -81,11 +84,48 @@ go build -o weathercli
 ./weathercli -format=json -output=/data/nifi/input/weather.json -zip-codes=90210,10001,60601
 ```
 
+## Web-based GUI
+
+The application includes an optional web-based GUI that can be run using Docker.
+
+### Running the GUI with Docker
+
+```bash
+# Build and start the GUI
+docker-compose up -d
+
+# Access the GUI in your browser
+# http://localhost:8080
+```
+
+### GUI Features
+
+- User-friendly interface for weather data
+- Support for multiple ZIP codes
+- Optional API key input
+- Toggle between metric and imperial units
+- Responsive design for desktop and mobile
+- Displays current conditions and 7-day forecast
+- Shows AI-generated summary when available
+
+### Docker Environment Variables
+
+You can configure the Docker container by editing the `docker-compose.yml` file:
+
+```yaml
+environment:
+  - PORT=8080
+  # Uncomment and set your OpenWeatherMap API key if you have one
+  # - OWM_API_KEY=your_api_key_here
+  # Uncomment and set your OpenAI API key if you want AI-generated summaries
+  # - OPENAI_API_KEY=your_openai_api_key_here
+```
+
 ## Environment Variables
 
 The application recognizes the following environment variables:
 
-- `OWM_API_KEY`: Your OpenWeatherMap API key
+- `OWM_API_KEY`: Your OpenWeatherMap API key (optional)
 - `OPENAI_API_KEY`: Your OpenAI API key (for AI-generated summaries)
 
 Example:
@@ -113,7 +153,7 @@ export OPENAI_API_KEY=your_openai_api_key
 
 This application forms part of a larger data pipeline:
 
-1. **Data Collection**: Collect weather data from OpenWeatherMap API
+1. **Data Collection**: Collect weather data from OpenWeatherMap API or National Weather Service API
 2. **Preprocessing**: Clean and transform the data into a standard format
 3. **Stream Processing**: Stream data through Kafka for real-time analysis
 4. **Batch Processing**: Generate CSV/JSON files for batch analysis
