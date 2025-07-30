@@ -16,6 +16,3 @@ vendor/
 
 # Environment variables
 .env
-
-# Crush directory
-.crush/
