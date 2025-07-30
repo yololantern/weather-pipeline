@@ -39,7 +39,7 @@ func ParseFlags() *Config {
 	config := &Config{}
 
 	// Define flags
-	flag.StringVar(&config.APIKey, "api-key", os.Getenv("OWM_API_KEY"), "OpenWeatherMap API key")
+	flag.StringVar(&config.APIKey, "api-key", os.Getenv("OWM_API_KEY"), "OpenWeatherMap API key (if not provided, National Weather Service API will be used)")
 	zipCodesStr := flag.String("zip-codes", "", "Comma-separated list of ZIP codes")
 	format := flag.String("format", "text", "Output format: text, json, csv, kafka")
 	flag.StringVar(&config.OutputPath, "output", "", "Output file path (stdout if empty)")
@@ -70,14 +70,17 @@ func ParseFlags() *Config {
 		config.Interval = time.Duration(*interval) * time.Second
 	}
 
+	// Log API choice
+	if config.APIKey == "" {
+		log.Println("No OpenWeatherMap API key provided. Using National Weather Service API as fallback.")
+	}
+
 	return config
 }
 
 // ValidateConfig validates the configuration
 func ValidateConfig(config *Config) error {
-	if config.APIKey == "" {
-		return fmt.Errorf("OpenWeatherMap API key is required (use -api-key flag or OWM_API_KEY env var)")
-	}
+	// API key is now optional - if not provided, we'll use the National Weather Service API
 
 	if len(config.ZipCodes) == 0 {
 		return fmt.Errorf("at least one ZIP code is required")

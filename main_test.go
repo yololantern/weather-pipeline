@@ -1,34 +1,67 @@
 package main
 
 import (
-	"bytes"
-	"io"
-	"os"
 	"testing"
 )
 
-func TestMainProgram(t *testing.T) {
-	// Capture standard output
-	r, w, _ := os.Pipe()
-	stdout := os.Stdout
-	os.Stdout = w
-	defer func() { os.Stdout = stdout }()
-
-	main()
-
-	// Close the pipe and read the output
-	w.Close()
-	var buf bytes.Buffer
-	_, err := io.Copy(&buf, r)
-	if err != nil {
-		t.Fatalf("Failed to copy output: %v", err)
+func TestValidateConfig(t *testing.T) {
+	// Test with empty ZIP codes
+	config := &Config{
+		APIKey:       "test-key",
+		OutputFormat: FormatText,
 	}
-	r.Close()
+	err := ValidateConfig(config)
+	if err == nil {
+		t.Error("Expected error for empty ZIP codes, got nil")
+	}
 
-	// Verify output
-	expected := "Hello, World!\n"
-	actual := buf.String()
-	if actual != expected {
-		t.Errorf("Expected %q but got %q", expected, actual)
+	// Test with valid ZIP code
+	config = &Config{
+		APIKey:       "test-key",
+		ZipCodes:     []string{"90210"},
+		OutputFormat: FormatText,
+	}
+	err = ValidateConfig(config)
+	if err != nil {
+		t.Errorf("Expected no error for valid config, got: %v", err)
+	}
+
+	// Test with invalid ZIP code
+	config = &Config{
+		APIKey:       "test-key",
+		ZipCodes:     []string{"invalid"},
+		OutputFormat: FormatText,
+	}
+	err = ValidateConfig(config)
+	if err == nil {
+		t.Error("Expected error for invalid ZIP code, got nil")
+	}
+
+	// Test with empty API key (should now be valid with NWS fallback)
+	config = &Config{
+		APIKey:       "",
+		ZipCodes:     []string{"90210"},
+		OutputFormat: FormatText,
+	}
+	err = ValidateConfig(config)
+	if err != nil {
+		t.Errorf("Expected no error for empty API key (NWS fallback), got: %v", err)
+	}
+}
+
+func TestIsValidZip(t *testing.T) {
+	validZips := []string{"90210", "10001", "60601"}
+	invalidZips := []string{"9021", "1000a", "abcde", "123456"}
+
+	for _, zip := range validZips {
+		if !isValidZip(zip) {
+			t.Errorf("Expected %s to be a valid ZIP code", zip)
+		}
+	}
+
+	for _, zip := range invalidZips {
+		if isValidZip(zip) {
+			t.Errorf("Expected %s to be an invalid ZIP code", zip)
+		}
 	}
 }
