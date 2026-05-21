@@ -226,14 +226,14 @@ func getNWSCoordinates(zip string) (float64, float64, string, error) {
 	return 40.7128, -74.0060, "New York", nil
 }
 
-func getWeather(lat, lon float64, apiKey string) (WeatherResponse, error) {
+func getWeather(lat, lon float64, apiKey string, isMetric bool) (WeatherResponse, error) {
 	// If no API key is provided, use the National Weather Service API
 	if apiKey == "" {
 		return getNWSWeather(lat, lon)
 	}
 
 	units := "imperial"
-	if false { // Default is imperial, change based on config in real implementation
+	if isMetric {
 		units = "metric"
 	}
 	urlStr := fmt.Sprintf("%s?lat=%f&lon=%f&exclude=minutely,hourly,alerts&units=%s&appid=%s", weatherEndpoint, lat, lon, units, apiKey)
@@ -517,10 +517,10 @@ func celsiusToFahrenheit(celsius float64) float64 {
 	return celsius*9/5 + 32
 }
 
-func buildForecastText(city, zip string, w WeatherResponse) string {
+func buildForecastText(city, zip string, w WeatherResponse, isMetric bool) string {
 	unit := "°F"
 	windUnit := "mph"
-	if false { // Default is imperial, change based on config in real implementation
+	if isMetric {
 		unit = "°C"
 		windUnit = "m/s"
 	}

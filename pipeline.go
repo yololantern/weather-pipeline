@@ -147,7 +147,7 @@ func GetLocationWeather(zip string, config *Config) (WeatherData, error) {
 	}
 
 	// Get weather
-	weather, err := getWeather(lat, lon, config.APIKey)
+	weather, err := getWeather(lat, lon, config.APIKey, config.IsMetric)
 	if err != nil {
 		return weatherData, fmt.Errorf("failed to get weather: %w", err)
 	}
@@ -199,7 +199,7 @@ func GetLocationWeather(zip string, config *Config) (WeatherData, error) {
 
 	// Generate summary if needed for specific output formats
 	if config.OutputFormat == FormatText {
-		forecastText := buildForecastText(city, zip, weather)
+		forecastText := buildForecastText(city, zip, weather, config.IsMetric)
 		if config.Verbose {
 			log.Println("Generating AI summary")
 		}
